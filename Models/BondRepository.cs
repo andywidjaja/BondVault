@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 using BondVault.Helper;
 
@@ -33,7 +34,7 @@ namespace BondVault.Models
 
         public IEnumerable<Bond> LoadAll()
         {
-            return _bondVault.Values;
+            return _bondVault.Values.Take(100);
         }
 
         public void Remove(string cusip)
@@ -47,6 +48,8 @@ namespace BondVault.Models
         private void Initialize(Dictionary<string, Bond> bondVault)
         {
             var file = Path.Combine(System.Environment.CurrentDirectory, "Data", "CusipTrainingData.csv");
+
+            Random rnd = new Random(DateTime.Now.Millisecond);
 
             using (var csvReader = new CsvReader(file, true))
             {
@@ -81,7 +84,17 @@ namespace BondVault.Models
                         bond.DatedDate = Convert.ToDateTime(data[13]);
                     }
 
-                    bondVault.Add(bond.Cusip, bond);
+                    if (bondVault.Count() > 200)
+                    {
+                        break;
+                    }
+
+                    var random = rnd.Next(0, 100);
+                    //Console.WriteLine(random);
+                    if (random == 99)
+                    {
+                        bondVault.Add(bond.Cusip, bond);
+                    }
                 }
             }
 
@@ -134,6 +147,17 @@ namespace BondVault.Models
             //         bondVault.Add(bond.Cusip, bond);
             //     }
             // }
+        }
+
+        private Dictionary<string, Bond> Shuffle(IEnumerable<KeyValuePair<string, Bond>> list)
+        {
+            Random rnd = new Random(DateTime.Now.Millisecond);
+            var randomised = list.Select(item => new { item, order = rnd.Next() })
+                .OrderBy(x => x.order)
+                .Select(x => x.item)
+                .ToDictionary(b => b.Key, b => b.Value);
+        
+            return randomised;
         }
     }
 }
