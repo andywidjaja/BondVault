@@ -4,6 +4,8 @@ namespace BondVault.Models
 {
     public class Bond
     {
+        public int Id {get; set;}
+
         public string Cusip {get; set;}
 
         public string AssetType {get;set;}

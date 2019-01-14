@@ -33,11 +33,11 @@ namespace BondVault.Controllers
             return Ok(bondList);
         }
 
-        // GET api/bonds/{cusip}
-        [HttpGet("{cusip}")]
-        public ActionResult<Bond> Get(string cusip)
+        // GET api/bonds/{id}
+        [HttpGet("{id}")]
+        public ActionResult<Bond> Get(int id)
         {
-            var bond = _bondRepository.Load(cusip);
+            var bond = _bondRepository.Load(id);
 
             if (bond == null)
             {
@@ -49,17 +49,20 @@ namespace BondVault.Controllers
 
         // POST api/bonds
         [HttpPost]
-        public void Post([FromBody] Bond bond)
+        public Bond Post([FromBody] Bond bond)
         {
+            System.Console.WriteLine("Adding a new bond");
+            return _bondRepository.Add(bond);
         }
 
-        // // PUT api/values/5
-        // [HttpPut("{id}")]
-        // public void Put(int id, [FromBody] string value)
-        // {
-        // }
+        // PUT api/bonds/{id}
+        [HttpPut("{id}")]
+        public Bond Put(int id, [FromBody] Bond bond)
+        {
+            return _bondRepository.Update(bond.Id, bond);
+        }
 
-        // // DELETE api/values/5
+        // // DELETE api/bonds/{id}
         // [HttpDelete("{id}")]
         // public void Delete(int id)
         // {

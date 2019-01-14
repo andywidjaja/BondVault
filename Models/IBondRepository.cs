@@ -5,14 +5,14 @@ namespace BondVault.Models
 {
     public interface IBondRepository
     {
-        void Add(Bond bond);
+        Bond Add(Bond bond);
 
-        Bond Load(string cusip);
+        Bond Load(int id);
 
         IEnumerable<Bond> LoadAll();
 
-        void Remove(string cusip);
+        void Remove(int id);
 
-        void Update(string cusip, Bond bond);
+        Bond Update(int id, Bond bond);
     }
 }

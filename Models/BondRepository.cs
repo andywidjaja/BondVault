@@ -9,22 +9,42 @@ namespace BondVault.Models
 {
     public class BondRepository : IBondRepository
     {
-        private readonly Dictionary<string, Bond> _bondVault;
+        private static int _maxBondId = 0;
+
+        private int _currentMax = 10;
+
+        private readonly Dictionary<int, Bond> _bondVault;
 
         public BondRepository()
         {
-            _bondVault = new Dictionary<string, Bond>();
+            _bondVault = new Dictionary<int, Bond>();
             Initialize(_bondVault);
         }
 
-        public void Add(Bond bond)
+        public Bond Add(Bond bond)
         {
+            var matchingCusip = _bondVault.Values.FirstOrDefault(b => b.Cusip == bond.Cusip);
+
+            if (matchingCusip != null)
+            {
+                return null;
+            }
+
+            _currentMax++;
+            bond.Id = ++_maxBondId;
+            System.Console.WriteLine($"Added a new bond: {bond.Id}");
+            if (_bondVault.TryAdd(bond.Id, bond))
+            {
+                return bond;
+            }
+
+            return null;
         }
 
-        public Bond Load(string cusip)
+        public Bond Load(int id)
         {
             Bond bond;
-            if (_bondVault.TryGetValue(cusip, out bond))
+            if (_bondVault.TryGetValue(id, out bond))
             {
                 return bond;
             }
@@ -34,18 +54,28 @@ namespace BondVault.Models
 
         public IEnumerable<Bond> LoadAll()
         {
-            return _bondVault.Values.Take(100);
+            return _bondVault.Values;
         }
 
-        public void Remove(string cusip)
+        public void Remove(int id)
         {
         }
 
-        public void Update(string cusip, Bond bond)
+        public Bond Update(int id, Bond bond)
         {
+            var matchingBond = Load(id);
+
+            if (matchingBond != null)
+            {
+                matchingBond.MarketSectorDescription = bond.MarketSectorDescription;
+            
+                return matchingBond;
+            }
+
+            return null;
         }
 
-        private void Initialize(Dictionary<string, Bond> bondVault)
+        private void Initialize(Dictionary<int, Bond> bondVault)
         {
             var file = Path.Combine(System.Environment.CurrentDirectory, "Data", "CusipTrainingData.csv");
 
@@ -59,6 +89,7 @@ namespace BondVault.Models
                     
                     var bond = new Bond
                     {
+                        Id = ++_maxBondId,
                         Cusip = data[0],
                         AssetType = data[1],
                         IssuerIndustry = data[2],
@@ -93,7 +124,7 @@ namespace BondVault.Models
                     //Console.WriteLine(random);
                     if (random == 99)
                     {
-                        bondVault.Add(bond.Cusip, bond);
+                        bondVault.Add(bond.Id, bond);
                     }
                 }
             }
